@@ -1,309 +1,299 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="format-detection" content="telephone=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>点击气球小游戏</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      touch-action: manipulation;
-      font-family: Arial, sans-serif;
-      background-color: #87CEEB;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>记忆卡片配对游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    #game-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            touch-action: manipulation;
+        }
 
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
 
-    .balloon {
-      position: absolute;
-      width: 60px;
-      height: 80px;
-      border-radius: 50%;
-      cursor: pointer;
-      transform-origin: bottom center;
-      animation: float 4s infinite ease-in-out;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-weight: bold;
-      font-size: 20px;
-    }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-    .balloon:before {
-      content: "";
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 6px;
-      height: 15px;
-      background-color: rgba(0, 0, 0, 0.2);
-      border-radius: 0 0 3px 3px;
-    }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
 
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0) rotate(0deg);
-      }
-      50% {
-        transform: translateY(-20px) rotate(5deg);
-      }
-    }
+        .card {
+            aspect-ratio: 1 / 1;
+            background: #3498db;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
 
-    #score-display {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      background-color: rgba(255, 255, 255, 0.7);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+        .card.flipped {
+            background: white;
+            transform: rotateY(180deg);
+            color: #2c3e50;
+        }
 
-    #timer {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: rgba(255, 255, 255, 0.7);
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-size: 24px;
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+        .card.matched {
+            background: #2ecc71;
+            cursor: default;
+        }
 
-    #start-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      z-index: 100;
-    }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
-    #start-button {
-      margin-top: 20px;
-      padding: 15px 30px;
-      font-size: 20px;
-      background-color: #FF5722;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #2c3e50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
 
-    #game-over {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      z-index: 100;
-    }
+        button:hover {
+            background: #34495e;
+        }
 
-    #restart-button {
-      margin-top: 20px;
-      padding: 15px 30px;
-      font-size: 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
+        .win-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            display: none;
+            z-index: 100;
+        }
 
-  </style>
+        .win-message.show {
+            display: flex;
+        }
+
+        @media (max-width: 500px) {
+            .game-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="game-container">
-  <div id="score-display">得分: 0</div>
-  <div id="timer">时间: 60</div>
+<h1>记忆卡片配对游戏</h1>
 
-  <div id="start-screen">
-    <h1>点击气球小游戏</h1>
-    <p>在60秒内点击尽可能多的气球！</p>
-    <button id="start-button">开始游戏</button>
-  </div>
+<div class="game-info">
+    <div>时间: <span id="time">0</span>秒</div>
+    <div>步数: <span id="moves">0</span></div>
+</div>
 
-  <div id="game-over">
-    <h1>游戏结束!</h1>
-    <p id="final-score">你的得分: 0</p>
-    <button id="restart-button">再玩一次</button>
-  </div>
+<div class="game-board" id="board"></div>
+
+<div class="controls">
+    <button id="restart">重新开始</button>
+</div>
+
+<div class="win-message" id="win-message">
+    <h2>恭喜你赢了!</h2>
+    <p>用时: <span id="final-time">0</span>秒</p>
+    <p>步数: <span id="final-moves">0</span></p>
+    <button id="play-again">再玩一次</button>
 </div>
 
 <script>
-  // 游戏变量
-  let score = 0;
-  let timeLeft = 60;
-  let gameInterval;
-  let timerInterval;
-  let isGameRunning = false;
+    // 游戏配置
+    const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+    let cards = [...emojis, ...emojis];
+    let flippedCards = [];
+    let matchedCards = [];
+    let moves = 0;
+    let time = 0;
+    let timer;
+    let gameStarted = false;
 
-  // DOM元素
-  const gameContainer = document.getElementById('game-container');
-  const scoreDisplay = document.getElementById('score-display');
-  const timerDisplay = document.getElementById('timer');
-  const startScreen = document.getElementById('start-screen');
-  const startButton = document.getElementById('start-button');
-  const gameOverScreen = document.getElementById('game-over');
-  const finalScoreDisplay = document.getElementById('final-score');
-  const restartButton = document.getElementById('restart-button');
+    // DOM元素
+    const board = document.getElementById('board');
+    const timeDisplay = document.getElementById('time');
+    const movesDisplay = document.getElementById('moves');
+    const restartBtn = document.getElementById('restart');
+    const winMessage = document.getElementById('win-message');
+    const finalTime = document.getElementById('final-time');
+    const finalMoves = document.getElementById('final-moves');
+    const playAgainBtn = document.getElementById('play-again');
 
-  // 气球颜色
-  const balloonColors = [
-    '#FF5252', '#FF4081', '#E040FB', '#7C4DFF',
-    '#536DFE', '#448AFF', '#40C4FF', '#18FFFF',
-    '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41',
-    '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
-  ];
+    // 初始化游戏
+    function initGame() {
+        // 重置游戏状态
+        flippedCards = [];
+        matchedCards = [];
+        moves = 0;
+        time = 0;
+        gameStarted = false;
 
-  // 开始游戏
-  function startGame() {
-    score = 0;
-    timeLeft = 60;
-    isGameRunning = true;
+        // 停止计时器
+        clearInterval(timer);
+        timeDisplay.textContent = time;
+        movesDisplay.textContent = moves;
 
-    // 清除所有现有气球
-    const balloons = document.querySelectorAll('.balloon');
-    balloons.forEach(balloon => balloon.remove());
+        // 洗牌
+        shuffleCards();
 
-    // 更新显示
-    scoreDisplay.textContent = `得分: ${score}`;
-    timerDisplay.textContent = `时间: ${timeLeft}`;
+        // 创建卡片
+        createCards();
 
-    // 隐藏开始屏幕
-    startScreen.style.display = 'none';
-    gameOverScreen.style.display = 'none';
-
-    // 开始游戏循环
-    gameInterval = setInterval(createBalloon, 1000);
-
-    // 开始计时器
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = `时间: ${timeLeft}`;
-
-      if (timeLeft <= 0) {
-        endGame();
-      }
-    }, 1000);
-  }
-
-  // 创建气球
-  function createBalloon() {
-    if (!isGameRunning) return;
-
-    const balloon = document.createElement('div');
-    balloon.className = 'balloon';
-
-    // 随机位置
-    const x = Math.random() * (window.innerWidth - 60);
-    const y = window.innerHeight + 50;
-
-    // 随机颜色
-    const colorIndex = Math.floor(Math.random() * balloonColors.length);
-    balloon.style.backgroundColor = balloonColors[colorIndex];
-
-    // 随机大小
-    const size = 40 + Math.random() * 40;
-    balloon.style.width = `${size}px`;
-    balloon.style.height = `${size * 1.3}px`;
-
-    // 随机值 (1-5分)
-    const value = Math.floor(Math.random() * 5) + 1;
-    balloon.textContent = value;
-
-    // 设置位置
-    balloon.style.left = `${x}px`;
-    balloon.style.top = `${y}px`;
-
-    // 点击事件
-    balloon.addEventListener('click', () => {
-      if (!isGameRunning) return;
-
-      // 增加分数
-      score += value;
-      scoreDisplay.textContent = `得分: ${score}`;
-
-      // 气球爆炸效果
-      balloon.style.transform = 'scale(1.2)';
-      balloon.style.opacity = '0';
-      setTimeout(() => {
-        balloon.remove();
-      }, 200);
-    });
-
-    // 添加到游戏容器
-    gameContainer.appendChild(balloon);
-
-    // 气球上升动画
-    const duration = 3000 + Math.random() * 4000;
-    balloon.style.transition = `top ${duration}ms linear`;
-
-    setTimeout(() => {
-      balloon.style.top = `-100px`;
-
-      // 气球飞出屏幕后移除
-      setTimeout(() => {
-        if (balloon.parentNode) {
-          balloon.remove();
-        }
-      }, duration);
-    }, 10);
-  }
-
-  // 结束游戏
-  function endGame() {
-    isGameRunning = false;
-    clearInterval(gameInterval);
-    clearInterval(timerInterval);
-
-    // 显示游戏结束屏幕
-    finalScoreDisplay.textContent = `你的得分: ${score}`;
-    gameOverScreen.style.display = 'flex';
-  }
-
-  // 事件监听
-  startButton.addEventListener('click', startGame);
-  restartButton.addEventListener('click', startGame);
-
-
-  // 防止触摸事件的默认行为
-  document.addEventListener('touchstart', function(e) {
-    if (e.target === gameContainer) {
-      e.preventDefault();
+        // 隐藏胜利消息
+        winMessage.classList.remove('show');
     }
-  }, { passive: false });
+
+    // 洗牌函数
+    function shuffleCards() {
+        for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [cards[i], cards[j]] = [cards[j], cards[i]];
+        }
+    }
+
+    // 创建卡片
+    function createCards() {
+        board.innerHTML = '';
+
+        cards.forEach((emoji, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.index = index;
+            card.dataset.value = emoji;
+            card.addEventListener('click', flipCard);
+            board.appendChild(card);
+        });
+    }
+
+    // 翻转卡片
+    function flipCard() {
+        // 如果游戏还没开始，开始计时
+        if (!gameStarted) {
+            startTimer();
+            gameStarted = true;
+        }
+
+        // 如果已经翻转或匹配，则忽略
+        if (flippedCards.includes(this) || matchedCards.includes(this)) {
+            return;
+        }
+
+        // 如果已经有两张翻转的卡片，则忽略
+        if (flippedCards.length === 2) {
+            return;
+        }
+
+        // 翻转卡片
+        this.classList.add('flipped');
+        this.textContent = this.dataset.value;
+        flippedCards.push(this);
+
+        // 如果翻转了两张卡片，检查是否匹配
+        if (flippedCards.length === 2) {
+            moves++;
+            movesDisplay.textContent = moves;
+
+            if (flippedCards[0].dataset.value === flippedCards[1].dataset.value) {
+                // 匹配成功
+                matchedCards.push(...flippedCards);
+                flippedCards = [];
+
+                // 检查游戏是否结束
+                if (matchedCards.length === cards.length) {
+                    endGame();
+                }
+            } else {
+                // 不匹配，翻转回去
+                setTimeout(() => {
+                    flippedCards.forEach(card => {
+                        card.classList.remove('flipped');
+                        card.textContent = '';
+                    });
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+    }
+
+    // 开始计时
+    function startTimer() {
+        timer = setInterval(() => {
+            time++;
+            timeDisplay.textContent = time;
+        }, 1000);
+    }
+
+    // 结束游戏
+    function endGame() {
+        clearInterval(timer);
+        finalTime.textContent = time;
+        finalMoves.textContent = moves;
+        winMessage.classList.add('show');
+    }
+
+    // 事件监听
+    restartBtn.addEventListener('click', initGame);
+    playAgainBtn.addEventListener('click', initGame);
+
+    // 初始化游戏
+    initGame();
+
+    // 防止触摸事件的默认行为
+    document.addEventListener('touchstart', function(e) {
+        if (e.target === board) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 </script>
 </body>
 </html>
